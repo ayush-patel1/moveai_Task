@@ -5,7 +5,7 @@ import { getTodayDate, formatDateForInput } from '../utils/helpers';
  * TaskForm Component
  * Reusable form for creating and editing tasks
  */
-function TaskForm({ task, onSubmit, onCancel }) {
+function TaskForm({ task, onSubmit, onCancel, isSubmitting = false }) {
     const isEditing = !!task;
 
     const [formData, setFormData] = useState({
@@ -65,7 +65,7 @@ function TaskForm({ task, onSubmit, onCancel }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (validate()) {
+        if (!isSubmitting && validate()) {
             onSubmit(formData);
         }
     };
@@ -81,6 +81,7 @@ function TaskForm({ task, onSubmit, onCancel }) {
                     onChange={handleChange}
                     className="form-input"
                     placeholder="Enter task title"
+                    disabled={isSubmitting}
                 />
                 {errors.title && <p className="form-error">{errors.title}</p>}
             </div>
@@ -93,6 +94,7 @@ function TaskForm({ task, onSubmit, onCancel }) {
                     onChange={handleChange}
                     className="form-textarea"
                     placeholder="Enter task description (optional)"
+                    disabled={isSubmitting}
                 />
             </div>
 
@@ -103,6 +105,7 @@ function TaskForm({ task, onSubmit, onCancel }) {
                     value={formData.priority}
                     onChange={handleChange}
                     className="form-select"
+                    disabled={isSubmitting}
                 >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
@@ -118,6 +121,7 @@ function TaskForm({ task, onSubmit, onCancel }) {
                     value={formData.due_date}
                     onChange={handleChange}
                     className="form-input"
+                    disabled={isSubmitting}
                 />
                 {errors.due_date && <p className="form-error">{errors.due_date}</p>}
             </div>
@@ -130,6 +134,7 @@ function TaskForm({ task, onSubmit, onCancel }) {
                         value={formData.status}
                         onChange={handleChange}
                         className="form-select"
+                        disabled={isSubmitting}
                     >
                         <option value="todo">Todo</option>
                         <option value="in_progress">In Progress</option>
@@ -139,11 +144,11 @@ function TaskForm({ task, onSubmit, onCancel }) {
             )}
 
             <div className="modal-footer" style={{ padding: 0, border: 'none', marginTop: '1rem' }}>
-                <button type="button" className="btn btn-ghost" onClick={onCancel}>
+                <button type="button" className="btn btn-ghost" onClick={onCancel} disabled={isSubmitting}>
                     Cancel
                 </button>
-                <button type="submit" className="btn btn-primary">
-                    {isEditing ? 'Update Task' : 'Create Task'}
+                <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                    {isSubmitting ? 'Saving...' : (isEditing ? 'Update Task' : 'Create Task')}
                 </button>
             </div>
         </form>
