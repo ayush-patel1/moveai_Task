@@ -74,8 +74,8 @@ function AuthForm() {
                 </div>
                 {/* Wavy Separator */}
                 <div className="auth-wave">
-                    <svg viewBox="0 0 100 600" preserveAspectRatio="none">
-                        <path d="M0,0 C30,100 70,200 40,300 C10,400 60,500 30,600 L100,600 L100,0 Z" fill="var(--color-bg)" />
+                    <svg viewBox="0 0 100 800" preserveAspectRatio="none">
+                        <path d="M0,0 C40,50 80,100 50,150 C20,200 70,250 40,300 C10,350 60,400 30,450 C0,500 50,550 20,600 C-10,650 40,700 10,750 L10,800 L100,800 L100,0 Z" fill="var(--color-bg)" />
                     </svg>
                 </div>
             </div>
