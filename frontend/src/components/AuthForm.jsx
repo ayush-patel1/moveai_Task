@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 
 /**
  * AuthForm Component
- * Combined login/register form
+ * Split-screen login/register form
  */
 function AuthForm() {
     const [isLogin, setIsLogin] = useState(true);
@@ -54,70 +54,93 @@ function AuthForm() {
     };
 
     return (
-        <div className="auth-container">
-            <div className="auth-card">
-                <h1 className="auth-title">📋 Task Manager</h1>
-                <h2 className="auth-subtitle">{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
+        <div className="auth-split-container">
+            {/* Left Panel - Branding */}
+            <div className="auth-left-panel">
+                <div className="auth-brand">
+                    <div className="auth-brand-icon">📋</div>
+                    <h1>{isLogin ? 'WELCOME BACK!' : 'JOIN US TODAY!'}</h1>
+                    <p>
+                        {isLogin
+                            ? 'Enter your credentials to continue managing your tasks'
+                            : 'Create an account and start organizing your life'
+                        }
+                    </p>
+                </div>
+                <div className="auth-decoration">
+                    <div className="decoration-circle circle-1"></div>
+                    <div className="decoration-circle circle-2"></div>
+                    <div className="decoration-circle circle-3"></div>
+                </div>
+            </div>
 
-                <form onSubmit={handleSubmit}>
-                    {!isLogin && (
-                        <div className="form-group">
-                            <label className="form-label">Name</label>
+            {/* Right Panel - Form */}
+            <div className="auth-right-panel">
+                <div className="auth-form-container">
+                    <h2>{isLogin ? 'SIGN IN' : 'SIGN UP'}</h2>
+                    <p className="auth-form-subtitle">
+                        {isLogin ? 'to access the task portal' : 'to create your account'}
+                    </p>
+
+                    <form onSubmit={handleSubmit}>
+                        {!isLogin && (
+                            <div className="auth-input-group">
+                                <span className="auth-input-icon">👤</span>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleChange}
+                                    placeholder="Enter Your Name"
+                                    disabled={loading}
+                                />
+                            </div>
+                        )}
+
+                        <div className="auth-input-group">
+                            <span className="auth-input-icon">✉️</span>
                             <input
-                                type="text"
-                                name="name"
-                                value={formData.name}
+                                type="email"
+                                name="email"
+                                value={formData.email}
                                 onChange={handleChange}
-                                className="form-input"
-                                placeholder="Enter your name"
+                                placeholder="Enter Email Address"
+                                required
+                                disabled={loading}
                             />
                         </div>
-                    )}
 
-                    <div className="form-group">
-                        <label className="form-label">Email</label>
-                        <input
-                            type="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            className="form-input"
-                            placeholder="Enter your email"
-                            required
-                        />
+                        <div className="auth-input-group">
+                            <span className="auth-input-icon">🔒</span>
+                            <input
+                                type="password"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                placeholder="Enter Password"
+                                required
+                                disabled={loading}
+                            />
+                        </div>
+
+                        {error && <div className="auth-error">{error}</div>}
+
+                        <button
+                            type="submit"
+                            className="auth-submit-btn"
+                            disabled={loading}
+                        >
+                            {loading ? 'Please wait...' : (isLogin ? 'Login' : 'Sign Up')}
+                        </button>
+                    </form>
+
+                    <div className="auth-switch">
+                        <span>{isLogin ? "Don't have an account?" : "Already have an account?"}</span>
+                        <button type="button" onClick={toggleMode} className="auth-switch-btn">
+                            {isLogin ? 'Sign Up' : 'Sign In'}
+                        </button>
                     </div>
-
-                    <div className="form-group">
-                        <label className="form-label">Password</label>
-                        <input
-                            type="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            className="form-input"
-                            placeholder="Enter your password"
-                            required
-                        />
-                    </div>
-
-                    {error && <div className="form-error" style={{ marginBottom: '1rem' }}>{error}</div>}
-
-                    <button
-                        type="submit"
-                        className="btn btn-primary"
-                        style={{ width: '100%', justifyContent: 'center' }}
-                        disabled={loading}
-                    >
-                        {loading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Sign Up')}
-                    </button>
-                </form>
-
-                <p className="auth-toggle">
-                    {isLogin ? "Don't have an account? " : "Already have an account? "}
-                    <button type="button" onClick={toggleMode} className="auth-link">
-                        {isLogin ? 'Sign Up' : 'Sign In'}
-                    </button>
-                </p>
+                </div>
             </div>
         </div>
     );
