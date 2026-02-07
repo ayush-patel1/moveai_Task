@@ -72,6 +72,12 @@ function AuthForm() {
                     <div className="decoration-circle circle-2"></div>
                     <div className="decoration-circle circle-3"></div>
                 </div>
+                {/* Wavy Separator */}
+                <div className="auth-wave">
+                    <svg viewBox="0 0 100 600" preserveAspectRatio="none">
+                        <path d="M0,0 C30,100 70,200 40,300 C10,400 60,500 30,600 L100,600 L100,0 Z" fill="var(--color-bg)" />
+                    </svg>
+                </div>
             </div>
 
             {/* Right Panel - Form */}
