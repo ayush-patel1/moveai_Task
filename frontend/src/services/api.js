@@ -1,6 +1,14 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 /**
+ * Get auth token from localStorage
+ */
+const getAuthHeader = () => {
+    const token = localStorage.getItem('token');
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+};
+
+/**
  * Fetch all tasks with optional filters
  */
 export const getTasks = async (filters = {}) => {
@@ -12,7 +20,9 @@ export const getTasks = async (filters = {}) => {
     if (filters.order) params.append('order', filters.order);
     if (filters.overdue) params.append('overdue', 'true');
 
-    const response = await fetch(`${API_BASE_URL}/tasks?${params}`);
+    const response = await fetch(`${API_BASE_URL}/tasks?${params}`, {
+        headers: { ...getAuthHeader() }
+    });
     const data = await response.json();
 
     if (!response.ok) {
@@ -28,7 +38,10 @@ export const getTasks = async (filters = {}) => {
 export const createTask = async (taskData) => {
     const response = await fetch(`${API_BASE_URL}/tasks`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeader()
+        },
         body: JSON.stringify(taskData)
     });
 
@@ -47,7 +60,10 @@ export const createTask = async (taskData) => {
 export const updateTask = async (id, taskData) => {
     const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeader()
+        },
         body: JSON.stringify(taskData)
     });
 
@@ -65,7 +81,8 @@ export const updateTask = async (id, taskData) => {
  */
 export const deleteTask = async (id) => {
     const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { ...getAuthHeader() }
     });
 
     const data = await response.json();

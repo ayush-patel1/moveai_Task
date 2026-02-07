@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from './context/AuthContext';
+import AuthForm from './components/AuthForm';
 import TaskCard from './components/TaskCard';
 import TaskForm from './components/TaskForm';
 import FilterBar from './components/FilterBar';
@@ -7,6 +9,8 @@ import { getTasks, createTask, updateTask, deleteTask } from './services/api';
 import './index.css';
 
 function App() {
+  const { user, loading: authLoading, isAuthenticated, logout } = useAuth();
+
   // State
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,6 +28,8 @@ function App() {
 
   // Fetch tasks
   const fetchTasks = useCallback(async () => {
+    if (!isAuthenticated) return;
+    
     try {
       setLoading(true);
       setError(null);
@@ -34,11 +40,13 @@ function App() {
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [filters, isAuthenticated]);
 
   useEffect(() => {
-    fetchTasks();
-  }, [fetchTasks]);
+    if (isAuthenticated) {
+      fetchTasks();
+    }
+  }, [fetchTasks, isAuthenticated]);
 
   // Create task
   const handleCreateTask = async (formData) => {
@@ -108,13 +116,33 @@ function App() {
     setEditingTask(null);
   };
 
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="loading" style={{ minHeight: '100vh', alignItems: 'center' }}>
+        <div className="spinner"></div>
+      </div>
+    );
+  }
+
+  // Show auth form if not logged in
+  if (!isAuthenticated) {
+    return <AuthForm />;
+  }
+
   return (
     <div className="container">
       <header className="header">
         <h1>Task Manager</h1>
-        <button className="btn btn-primary" onClick={handleCreateClick}>
-          + New Task
-        </button>
+        <div className="header-actions">
+          <span className="user-name">👤 {user?.name}</span>
+          <button className="btn btn-primary" onClick={handleCreateClick}>
+            + New Task
+          </button>
+          <button className="btn btn-ghost" onClick={logout}>
+            Logout
+          </button>
+        </div>
       </header>
 
       <FilterBar filters={filters} onFilterChange={setFilters} />

@@ -7,17 +7,23 @@ async function runMigration() {
     try {
         console.log('Connecting to database...');
 
-        // Read the migration file
-        const migrationSQL = fs.readFileSync(
-            path.join(__dirname, '001_create_tasks_table.sql'),
-            'utf8'
-        );
+        // Get migration file from command line or run all
+        const migrationFiles = [
+            '001_create_tasks_table.sql',
+            '002_create_users_table.sql'
+        ];
 
-        console.log('Running migration...');
-        await pool.query(migrationSQL);
+        for (const file of migrationFiles) {
+            const filePath = path.join(__dirname, file);
+            if (fs.existsSync(filePath)) {
+                console.log(`Running migration: ${file}...`);
+                const migrationSQL = fs.readFileSync(filePath, 'utf8');
+                await pool.query(migrationSQL);
+                console.log(`✅ ${file} completed`);
+            }
+        }
 
-        console.log('✅ Migration completed successfully!');
-        console.log('✅ Tasks table created with indexes');
+        console.log('✅ All migrations completed successfully!');
 
         process.exit(0);
     } catch (error) {
