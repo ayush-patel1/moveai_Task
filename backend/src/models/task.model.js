@@ -16,24 +16,40 @@ class Task {
     }
 
     static async findAll(filters = {}) {
-        let query = 'SELECT * FROM tasks WHERE 1=1';
+        // Include is_overdue computed field
+        let query = `
+            SELECT *, 
+                CASE 
+                    WHEN status != 'done' AND due_date < CURRENT_DATE THEN true 
+                    ELSE false 
+                END as is_overdue
+            FROM tasks WHERE 1=1
+        `;
         const values = [];
         let paramCount = 1;
 
+        // Filter by status
         if (filters.status) {
             query += ` AND status = $${paramCount}`;
             values.push(filters.status);
             paramCount++;
         }
 
+        // Filter by priority
         if (filters.priority) {
             query += ` AND priority = $${paramCount}`;
             values.push(filters.priority);
             paramCount++;
         }
 
-        // Sorting
-        const sortBy = filters.sortBy || 'created_at';
+        // Filter overdue tasks only
+        if (filters.overdue) {
+            query += ` AND status != 'done' AND due_date < CURRENT_DATE`;
+        }
+
+        // Sorting - whitelist allowed columns to prevent SQL injection
+        const allowedSortColumns = ['created_at', 'due_date', 'priority', 'status', 'title'];
+        const sortBy = allowedSortColumns.includes(filters.sortBy) ? filters.sortBy : 'created_at';
         const order = filters.order === 'asc' ? 'ASC' : 'DESC';
         query += ` ORDER BY ${sortBy} ${order}`;
 
