@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
+const authRoutes = require('./routes/auth.routes');
 const taskRoutes = require('./routes/task.routes');
+const { protect } = require('./middlewares/auth');
 const errorHandler = require('./middlewares/errorHandler');
 
 const app = express();
@@ -15,7 +17,8 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
-app.use('/api/tasks', taskRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/tasks', protect, taskRoutes);
 
 // 404 handler for unknown routes
 app.use((req, res) => {
@@ -29,3 +32,4 @@ app.use((req, res) => {
 app.use(errorHandler);
 
 module.exports = app;
+

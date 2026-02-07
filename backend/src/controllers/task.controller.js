@@ -8,6 +8,7 @@ const AppError = require('../utils/AppError');
 const createTask = async (req, res, next) => {
     try {
         const { title, description, priority, due_date, status } = req.body;
+        const userId = req.user.id;
 
         const task = await Task.create({
             title: title.trim(),
@@ -15,7 +16,7 @@ const createTask = async (req, res, next) => {
             priority,
             due_date,
             status
-        });
+        }, userId);
 
         res.status(201).json({
             success: true,
@@ -30,11 +31,11 @@ const createTask = async (req, res, next) => {
 /**
  * Get all tasks with filtering and sorting
  * GET /api/tasks
- * Query params: status, priority, sortBy, order, overdue
  */
 const getAllTasks = async (req, res, next) => {
     try {
         const { status, priority, sortBy, order, overdue } = req.query;
+        const userId = req.user.id;
 
         const tasks = await Task.findAll({
             status,
@@ -42,7 +43,7 @@ const getAllTasks = async (req, res, next) => {
             sortBy: sortBy || 'created_at',
             order: order || 'desc',
             overdue: overdue === 'true'
-        });
+        }, userId);
 
         res.status(200).json({
             success: true,
@@ -61,7 +62,8 @@ const getAllTasks = async (req, res, next) => {
 const getTaskById = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const task = await Task.findById(id);
+        const userId = req.user.id;
+        const task = await Task.findById(id, userId);
 
         if (!task) {
             return next(new AppError('Task not found', 404));
@@ -84,9 +86,10 @@ const updateTask = async (req, res, next) => {
     try {
         const { id } = req.params;
         const { title, description, priority, due_date, status } = req.body;
+        const userId = req.user.id;
 
         // Check if task exists
-        const existingTask = await Task.findById(id);
+        const existingTask = await Task.findById(id, userId);
         if (!existingTask) {
             return next(new AppError('Task not found', 404));
         }
@@ -97,7 +100,7 @@ const updateTask = async (req, res, next) => {
             priority,
             due_date,
             status
-        });
+        }, userId);
 
         res.status(200).json({
             success: true,
@@ -116,8 +119,9 @@ const updateTask = async (req, res, next) => {
 const deleteTask = async (req, res, next) => {
     try {
         const { id } = req.params;
+        const userId = req.user.id;
 
-        const task = await Task.delete(id);
+        const task = await Task.delete(id, userId);
 
         if (!task) {
             return next(new AppError('Task not found', 404));
