@@ -16,36 +16,44 @@ class Task {
     }
 
     static async findAll(filters = {}, userId) {
-        // Include is_overdue computed field
-        let query = `
-            SELECT *, 
-                CASE 
-                    WHEN status != 'done' AND due_date < CURRENT_DATE THEN true 
-                    ELSE false 
-                END as is_overdue
-            FROM tasks WHERE user_id = $1
-        `;
+        // Build WHERE clause conditions
+        let whereClause = 'WHERE user_id = $1';
         const values = [userId];
         let paramCount = 2;
 
         // Filter by status
         if (filters.status) {
-            query += ` AND status = $${paramCount}`;
+            whereClause += ` AND status = $${paramCount}`;
             values.push(filters.status);
             paramCount++;
         }
 
         // Filter by priority
         if (filters.priority) {
-            query += ` AND priority = $${paramCount}`;
+            whereClause += ` AND priority = $${paramCount}`;
             values.push(filters.priority);
             paramCount++;
         }
 
         // Filter overdue tasks only
         if (filters.overdue) {
-            query += ` AND status != 'done' AND due_date < CURRENT_DATE`;
+            whereClause += ` AND status != 'done' AND due_date < CURRENT_DATE`;
         }
+
+        // Count query for pagination
+        const countQuery = `SELECT COUNT(*) FROM tasks ${whereClause}`;
+        const countResult = await pool.query(countQuery, values);
+        const total = parseInt(countResult.rows[0].count, 10);
+
+        // Main query with is_overdue computed field
+        let query = `
+            SELECT *, 
+                CASE 
+                    WHEN status != 'done' AND due_date < CURRENT_DATE THEN true 
+                    ELSE false 
+                END as is_overdue
+            FROM tasks ${whereClause}
+        `;
 
         // Sorting - whitelist allowed columns to prevent SQL injection
         const allowedSortColumns = ['created_at', 'due_date', 'priority', 'status', 'title'];
@@ -53,8 +61,25 @@ class Task {
         const order = filters.order === 'asc' ? 'ASC' : 'DESC';
         query += ` ORDER BY ${sortBy} ${order}`;
 
+        // Pagination
+        const page = Math.max(1, parseInt(filters.page, 10) || 1);
+        const limit = Math.min(100, Math.max(1, parseInt(filters.limit, 10) || 10));
+        const offset = (page - 1) * limit;
+
+        query += ` LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
+        values.push(limit, offset);
+
         const result = await pool.query(query, values);
-        return result.rows;
+
+        return {
+            tasks: result.rows,
+            pagination: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit)
+            }
+        };
     }
 
     static async findById(id, userId) {

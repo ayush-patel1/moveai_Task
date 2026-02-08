@@ -29,26 +29,29 @@ const createTask = async (req, res, next) => {
 };
 
 /**
- * Get all tasks with filtering and sorting
+ * Get all tasks with filtering, sorting, and pagination
  * GET /api/tasks
  */
 const getAllTasks = async (req, res, next) => {
     try {
-        const { status, priority, sortBy, order, overdue } = req.query;
+        const { status, priority, sortBy, order, overdue, page, limit } = req.query;
         const userId = req.user.id;
 
-        const tasks = await Task.findAll({
+        const result = await Task.findAll({
             status,
             priority,
             sortBy: sortBy || 'created_at',
             order: order || 'desc',
-            overdue: overdue === 'true'
+            overdue: overdue === 'true',
+            page,
+            limit
         }, userId);
 
         res.status(200).json({
             success: true,
-            count: tasks.length,
-            data: tasks
+            count: result.tasks.length,
+            pagination: result.pagination,
+            data: result.tasks
         });
     } catch (error) {
         next(error);
